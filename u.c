@@ -1,5 +1,5 @@
 #ifdef _MSC_VER
-#pragma warning(disable:0000)
+#pragma warning(disable:4996)
 #endif
 #include <stdio.h>
 #include <Windows.h>
@@ -16,7 +16,7 @@ int CopyChar(unsigned long codePoint)
 		CloseClipboard();
 		return 2;
 	}
-	auto hMem = GlobalAlloc(GMEM_MOVEABLE, 8);
+	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, 8);
 	if (!hMem)
 	{
 		fprintf(stderr, "u: Memory allocation failure.\n");
@@ -24,10 +24,10 @@ int CopyChar(unsigned long codePoint)
 		return 3;
 	}
 
-	unsigned short* pText = GlobalLock(hMem);
+	unsigned short* pText = (unsigned short*)GlobalLock(hMem);
 	if (codePoint <= 0xD7FF)
 	{
-		pText[0] = codePoint;
+		pText[0] = (unsigned short)codePoint;
 		pText[1] = 0;
 	}
 	else
@@ -44,12 +44,13 @@ int CopyChar(unsigned long codePoint)
 	return 0;
 }
 
+/****************************************
 unsigned long GetCurrentContents()
 {
 	// Returns code point of first character of text on clipboard
-	auto hClip = OpenClipboard(NULL);
+	BOOL hClip = OpenClipboard(NULL);
 	if (!hClip) { return 0; }
-	auto hRawData = GetClipboardData(CF_UNICODETEXT);
+	HANDLE hRawData = GetClipboardData(CF_UNICODETEXT);
 	if (!hRawData) { return 0; }
 	unsigned short* pText = GlobalLock(hRawData);
 	if (pText[0] & 0xC000)
@@ -59,6 +60,7 @@ unsigned long GetCurrentContents()
 	GlobalUnlock(hRawData);
 	CloseClipboard();
 }
+**************************************/
 
 int main(int argc, char** argv)
 {
